@@ -58,8 +58,10 @@ import kotlinx.coroutines.delay
 data class StepStatus(
     val hasSensor: Boolean,
     val hasPermission: Boolean,
+    val notificationShown: Boolean,
     val onRequestPermission: () -> Unit,
     val onOpenSettings: () -> Unit,
+    val onHideNotification: () -> Unit,
 )
 
 @Composable
@@ -257,12 +259,26 @@ private fun StepPanel(status: StepStatus) {
                     Text("Open app settings", color = Parchment.Wood)
                 }
             }
-            else -> Text(
-                "Counting your steps: 1 step = 1 XP. Progress toward the next level resets at midnight; your level stays.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Parchment.InkFaded,
-                textAlign = TextAlign.Center,
-            )
+            else -> {
+                Text(
+                    "Counting your steps: 1 step = 1 XP. Progress toward the next level resets at midnight; your level stays.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Parchment.InkFaded,
+                    textAlign = TextAlign.Center,
+                )
+                if (status.notificationShown) {
+                    Spacer(Modifier.height(8.dp))
+                    TextButton(onClick = status.onHideNotification) {
+                        Text("Hide the step-counting notification", color = Parchment.Wood)
+                    }
+                    Text(
+                        "Turn it off on the next screen. Steps keep counting.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Parchment.InkFaded,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
         }
     }
 }

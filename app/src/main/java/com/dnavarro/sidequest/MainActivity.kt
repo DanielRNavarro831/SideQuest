@@ -59,6 +59,7 @@ private fun SideQuestRoot(vm: MainViewModel = viewModel()) {
     // ---- Step counting permission ----
     val hasSensor = remember { StepPermissions.hasStepSensor(context) }
     var hasPermission by remember { mutableStateOf(StepPermissions.hasActivityRecognition(context)) }
+    var notificationShown by remember { mutableStateOf(StepPermissions.isStepNotificationShown(context)) }
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         vm.markPermissionPrompted()
         hasPermission = StepPermissions.hasActivityRecognition(context)
@@ -66,6 +67,7 @@ private fun SideQuestRoot(vm: MainViewModel = viewModel()) {
     }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         hasPermission = StepPermissions.hasActivityRecognition(context)
+        notificationShown = StepPermissions.isStepNotificationShown(context)
         vm.onResume()
         if (hasPermission) StepCounterService.start(context)
     }
@@ -78,7 +80,9 @@ private fun SideQuestRoot(vm: MainViewModel = viewModel()) {
     val stepStatus = StepStatus(
         hasSensor = hasSensor,
         hasPermission = hasPermission,
+        notificationShown = notificationShown,
         onRequestPermission = { permissionLauncher.launch(StepPermissions.permissionsToRequest()) },
+        onHideNotification = { context.startActivity(StepPermissions.stepNotificationSettingsIntent(context)) },
         onOpenSettings = {
             context.startActivity(
                 Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null)),

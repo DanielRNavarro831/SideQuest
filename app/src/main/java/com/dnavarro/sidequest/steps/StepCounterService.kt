@@ -51,6 +51,7 @@ class StepCounterService : Service(), SensorEventListener {
             stopSelf()
             return START_NOT_STICKY
         }
+        running = true
         return START_STICKY
     }
 
@@ -95,6 +96,7 @@ class StepCounterService : Service(), SensorEventListener {
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
 
     override fun onDestroy() {
+        running = false
         sensorManager?.unregisterListener(this)
         sensorManager = null
         scope.cancel()
@@ -122,7 +124,7 @@ class StepCounterService : Service(), SensorEventListener {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_walk)
             .setContentTitle("Daily Adventure")
-            .setContentText("Counting your steps")
+            .setContentText("Counting your steps. You can turn this notice off; counting continues.")
             .setOngoing(true)
             .setSilent(true)
             .setPriority(NotificationCompat.PRIORITY_MIN)
@@ -132,12 +134,21 @@ class StepCounterService : Service(), SensorEventListener {
 
     companion object {
         private const val TAG = "StepCounterService"
-        private const val CHANNEL_ID = "step_counting"
+        const val CHANNEL_ID = "step_counting"
         private const val NOTIFICATION_ID = 1
         private const val MAX_REPORT_LATENCY_US = 5_000_000
 
-        /** Safe to call repeatedly; does nothing without permission or a step sensor. */
+        /** True while this process's service is counting. */
+        @Volatile
+        private var running = false
+
+        /**
+         * Safe to call repeatedly; does nothing without permission or a step sensor. Skips the
+         * restart when already counting, because restarting re-posts the notification the
+         * user may have swiped away.
+         */
         fun start(context: Context) {
+            if (running) return
             if (!StepPermissions.hasActivityRecognition(context) || !StepPermissions.hasStepSensor(context)) return
             try {
                 ContextCompat.startForegroundService(context, Intent(context, StepCounterService::class.java))
