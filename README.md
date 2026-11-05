@@ -31,7 +31,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 ## Adding art
 
-Art is placeholder emoji until real images exist. Drop PNGs into `app/src/main/res/drawable/` with these names and they're used automatically (scaled with crisp pixels):
+Art is placeholder emoji until real images exist. Drop square PNGs with transparent backgrounds into `app/src/main/res/drawable-nodpi/` (not `drawable/`, which Android blurs when scaling) with these names and they're used automatically. Small pixel art is enlarged with crisp pixels; large images are shrunk smoothly.
 
 - Heroes: `hero_warrior`, `hero_wizard`, `hero_archer`, `hero_rogue`, `hero_bard`
 - Skill icons: `skill_footsteps`, `skill_sword`, `skill_spellbook`, `skill_scroll`, `skill_dishes`, `skill_broom`, `skill_d20`, `skill_training_dummy`, `skill_shield`, `skill_dragon`, `skill_bow_and_arrow`, `skill_quill_and_parchment`, `skill_potion`

@@ -62,12 +62,16 @@ fun ArtImage(art: ArtSpec, size: Dp, modifier: Modifier = Modifier) {
     }
     Box(modifier.size(size), contentAlignment = Alignment.Center) {
         if (resId != 0) {
+            val bitmap = ImageBitmap.imageResource(resId)
+            val boxPx = with(LocalDensity.current) { size.roundToPx() }
             Image(
-                bitmap = ImageBitmap.imageResource(resId),
+                bitmap = bitmap,
                 contentDescription = art.label,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Fit,
-                filterQuality = FilterQuality.None,
+                // Small pixel art is enlarged with crisp, blocky pixels; large images are
+                // shrunk smoothly, since nearest-neighbour shrinking looks jagged.
+                filterQuality = if (bitmap.width < boxPx) FilterQuality.None else FilterQuality.High,
             )
         } else {
             val fontSize = with(LocalDensity.current) { (size * 0.62f).toSp() }
