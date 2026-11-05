@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="backdrop">#FF2B1D12</color>
+    <color name="launcher_background">#FF5A3A1E</color>
+
+    <style name="Theme.SideQuest" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/backdrop</item>
+    </style>
+</resources>
