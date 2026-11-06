@@ -56,6 +56,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun setName(name: String) = repository.update { it.withName(name) }
     fun setTitle(title: String) = repository.update { it.withTitle(title) }
     fun setCharacter(character: CharacterClass) = repository.update { it.withCharacter(character) }
+    fun setSound(on: Boolean) = repository.update { it.withSound(on) }
     fun setLevelSettings(settings: OverallLevelSettings) = repository.update { it.withLevelSettings(settings) }
 
     fun addSkill(draft: SkillDraft) = repository.update { it.addSkill(UUID.randomUUID().toString(), draft) }

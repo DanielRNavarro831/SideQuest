@@ -25,6 +25,11 @@ import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Switch
 import com.dnavarro.sidequest.ui.components.FrameInsets
 import com.dnavarro.sidequest.ui.components.FramedBox
 import androidx.compose.ui.graphics.lerp
@@ -78,6 +83,7 @@ fun ProfileHeader(
     onTitle: (String) -> Unit,
     onCharacter: (CharacterClass) -> Unit,
     onLevelSettings: (OverallLevelSettings) -> Unit,
+    onSound: (Boolean) -> Unit = {},
     badgePulses: Int = 0,
     onBadgePulsed: (Int) -> Unit = {},
     badgePulsesPlayed: Int = badgePulses,
@@ -153,6 +159,8 @@ fun ProfileHeader(
         AnimatedVisibility(visible = editingLevel) {
             LevelModeEditor(
                 current = profile.levelSettings,
+                soundOn = profile.soundOn,
+                onSound = onSound,
                 onSave = {
                     onLevelSettings(it)
                     editingLevel = false
@@ -240,6 +248,8 @@ private fun LevelBadge(level: Int, pulses: Int, played: Int, onPulsed: (Int) -> 
 @Composable
 private fun LevelModeEditor(
     current: OverallLevelSettings,
+    soundOn: Boolean,
+    onSound: (Boolean) -> Unit,
     onSave: (OverallLevelSettings) -> Unit,
     onCancel: () -> Unit,
 ) {
@@ -316,6 +326,35 @@ private fun LevelModeEditor(
                 )
             }
             Spacer(Modifier.padding(bottom = 8.dp))
+        }
+        // Not about levels, but this panel is the app's settings spot for now.
+        Box(Modifier.fillMaxWidth().padding(horizontal = 8.dp).height(1.dp).background(Parchment.PaperEdge))
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .toggleable(value = soundOn, onValueChange = onSound, role = Role.Switch)
+                .padding(start = 12.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text("Sound effects", style = MaterialTheme.typography.bodyLarge, color = Parchment.Ink)
+                Text(
+                    "Plays on level-ups and finished quests. Always quiet when your phone is on silent.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Parchment.InkFaded,
+                )
+            }
+            Switch(
+                checked = soundOn,
+                onCheckedChange = null,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Parchment.Paper,
+                    checkedTrackColor = Parchment.Wood,
+                    uncheckedThumbColor = Parchment.WoodLight,
+                    uncheckedTrackColor = Parchment.PaperShade,
+                    uncheckedBorderColor = Parchment.PaperEdge,
+                ),
+            )
         }
     }
 }

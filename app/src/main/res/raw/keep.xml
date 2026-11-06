@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Art is looked up by name at runtime (see Art.kt), so keep it if resource shrinking is ever enabled. -->
+<!-- Art and sounds are looked up by name at runtime (see Art.kt, Frames.kt, SoundEffects.kt),
+     so keep them if resource shrinking is ever enabled. -->
 <resources xmlns:tools="http://schemas.android.com/tools"
-    tools:keep="@drawable/hero_*,@drawable/skill_*,@drawable/button_*" />
+    tools:keep="@drawable/hero_*,@drawable/skill_*,@drawable/button_*,@drawable/frame_*,@raw/sfx_*" />

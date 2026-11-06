@@ -13,6 +13,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import com.dnavarro.sidequest.sound.rememberSoundEffects
 import com.dnavarro.sidequest.ui.components.CelebrationHost
 import com.dnavarro.sidequest.model.Celebration
 import androidx.compose.ui.Modifier
@@ -118,6 +119,7 @@ private fun SideQuestRoot(vm: MainViewModel = viewModel()) {
     var celebrationsPlayed by remember { mutableIntStateOf(0) }
     // Bumped after a hero level-up banner closes, so the level badge pulses once you can see it.
     var badgePulses by remember { mutableIntStateOf(0) }
+    val sounds = rememberSoundEffects()
     var badgePulsesPlayed by remember { mutableIntStateOf(0) }
 
     Box(Modifier.fillMaxSize()) {
@@ -178,6 +180,7 @@ private fun SideQuestRoot(vm: MainViewModel = viewModel()) {
                 onTitle = vm::setTitle,
                 onCharacter = vm::setCharacter,
                 onLevelSettings = vm::setLevelSettings,
+                onSound = vm::setSound,
                 onOpenSkill = { route = SKILL_PREFIX + it },
                 onNewSkill = { route = ROUTE_NEW },
                 onOpenQuest = { route = QUEST_PREFIX + it },
@@ -193,6 +196,7 @@ private fun SideQuestRoot(vm: MainViewModel = viewModel()) {
     CelebrationHost(
         playKey = celebrationsPlayed,
         celebration = current,
+        onStart = { if (state.profile.soundOn) sounds.play(it) },
         onDone = {
             if (current is Celebration.HeroLevelUp) badgePulses++
             celebrationsPlayed++

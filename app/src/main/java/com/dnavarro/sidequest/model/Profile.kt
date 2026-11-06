@@ -20,6 +20,8 @@ data class Profile(
     val title: String = "",
     val character: CharacterClass = CharacterClass.WARRIOR,
     val levelSettings: OverallLevelSettings = OverallLevelSettings(),
+    /** Celebration sound effects (still silent while the phone is on silent/vibrate). */
+    val soundOn: Boolean = true,
 )
 
 /** progress/progressGoal are only set for EVERY_X, which shows a progress bar. */

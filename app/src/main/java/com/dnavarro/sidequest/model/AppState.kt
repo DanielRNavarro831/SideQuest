@@ -52,6 +52,8 @@ data class AppState(
     fun withCharacter(character: CharacterClass): AppState =
         copy(profile = profile.copy(character = character))
 
+    fun withSound(on: Boolean): AppState = copy(profile = profile.copy(soundOn = on))
+
     fun withLevelSettings(settings: OverallLevelSettings): AppState {
         if (settings.mode == LevelMode.EVERY_X && settings.x < Limits.X_MIN) return this
         val x = settings.x.coerceIn(Limits.X_MIN, Limits.X_MAX)

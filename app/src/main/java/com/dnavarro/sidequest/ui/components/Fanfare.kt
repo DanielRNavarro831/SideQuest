@@ -84,11 +84,12 @@ fun rememberReduceMotion(): Boolean {
  * [playKey] changes whenever a new celebration starts, so back-to-back ones each replay.
  */
 @Composable
-fun CelebrationHost(playKey: Int, celebration: Celebration?, onDone: () -> Unit) {
+fun CelebrationHost(playKey: Int, celebration: Celebration?, onStart: (Celebration) -> Unit = {}, onDone: () -> Unit) {
     if (celebration == null) return
     key(playKey, celebration) {
         val view = LocalView.current
         LaunchedEffect(Unit) {
+            onStart(celebration)
             when (celebration) {
                 is Celebration.QuestCompleted -> buzz(view, strong = false)
                 is Celebration.SkillLevelUp, is Celebration.RenownUp -> buzz(view, strong = true)
