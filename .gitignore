@@ -10,3 +10,6 @@ build/
 *.jks
 *.keystore
 keystore.properties
+
+# Raw source audio (only the edited .ogg files in res/raw are committed)
+art-source/sfx/
