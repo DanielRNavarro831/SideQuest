@@ -5,7 +5,11 @@ import androidx.compose.material3.Typography
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import com.dnavarro.sidequest.R
 
 object Parchment {
     val Paper = Color(0xFFF3E4C1)
@@ -57,7 +61,13 @@ private fun Typography.withFamily(family: FontFamily) = Typography(
     labelSmall = labelSmall.copy(fontFamily = family),
 )
 
-private val ScrollTypography = Typography().withFamily(FontFamily.Serif)
+/** IM FELL English (SIL Open Font License; see art-source/fonts/OFL.txt). It has no bold cut, so bold is synthesized. */
+private val ImFellEnglish = FontFamily(
+    Font(R.font.im_fell_english_regular, FontWeight.Normal, FontStyle.Normal),
+    Font(R.font.im_fell_english_italic, FontWeight.Normal, FontStyle.Italic),
+)
+
+private val ScrollTypography = Typography().withFamily(ImFellEnglish)
 
 @Composable
 fun SideQuestTheme(content: @Composable () -> Unit) {

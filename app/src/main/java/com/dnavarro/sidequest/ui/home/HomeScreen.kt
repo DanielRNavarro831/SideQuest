@@ -34,10 +34,12 @@ import com.dnavarro.sidequest.model.CharacterClass
 import com.dnavarro.sidequest.model.OverallLevelSettings
 import com.dnavarro.sidequest.model.Skill
 import com.dnavarro.sidequest.ui.components.ArtImage
+import com.dnavarro.sidequest.ui.components.ButtonIcon
 import com.dnavarro.sidequest.ui.components.Ornament
 import com.dnavarro.sidequest.ui.components.XpBar
 import com.dnavarro.sidequest.ui.components.art
 import com.dnavarro.sidequest.ui.components.withCommas
+import com.dnavarro.sidequest.ui.components.withPlainDigits
 import com.dnavarro.sidequest.ui.theme.Parchment
 
 @Composable
@@ -75,7 +77,7 @@ fun HomeScreen(
             onClick = onNewSkill,
             containerColor = Parchment.Wood,
             contentColor = Parchment.Paper,
-            icon = { Icon(painterResource(R.drawable.ic_add), contentDescription = null) },
+            icon = { ButtonIcon("button_new_skill", R.drawable.ic_add, null, Parchment.Paper, artSize = 36.dp) },
             text = { Text("New Skill") },
             modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
         )
@@ -101,7 +103,7 @@ private fun SkillRow(skill: Skill, onClick: () -> Unit) {
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    skill.name,
+                    skill.name.withPlainDigits(),
                     style = MaterialTheme.typography.titleMedium,
                     color = Parchment.Ink,
                     maxLines = 1,
@@ -109,7 +111,7 @@ private fun SkillRow(skill: Skill, onClick: () -> Unit) {
                     modifier = Modifier.weight(1f),
                 )
                 Text(
-                    "Lv ${skill.level}",
+                    "Lv ${skill.level}".withPlainDigits(),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     color = Parchment.Wood,
                 )
@@ -118,9 +120,9 @@ private fun SkillRow(skill: Skill, onClick: () -> Unit) {
             XpBar(skill.xp.toFloat() / skill.xpThreshold)
             Text(
                 if (skill.isStepSkill) {
-                    "${skill.xp.withCommas()} / ${skill.xpThreshold.withCommas()} steps · resets at midnight"
+                    "${skill.xp.withCommas()} / ${skill.xpThreshold.withCommas()} steps · resets at midnight".withPlainDigits()
                 } else {
-                    "${skill.xp} / ${skill.xpThreshold} XP"
+                    "${skill.xp} / ${skill.xpThreshold} XP".withPlainDigits()
                 },
                 style = MaterialTheme.typography.labelSmall,
                 color = Parchment.InkFaded,

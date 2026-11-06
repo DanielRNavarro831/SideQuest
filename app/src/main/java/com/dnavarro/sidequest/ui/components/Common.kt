@@ -24,6 +24,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.dnavarro.sidequest.R
 import com.dnavarro.sidequest.ui.theme.Parchment
@@ -95,3 +100,28 @@ fun SectionLabel(text: String, modifier: Modifier = Modifier) {
 }
 
 fun Int.withCommas(): String = "%,d".format(this)
+
+private val PlainDigits = SpanStyle(fontFamily = FontFamily.Serif)
+
+/**
+ * IM FELL English only has old-style numerals (its 1 looks like a capital I), so digits are
+ * drawn in a plain serif while the surrounding letters keep the old-timey font.
+ */
+fun String.withPlainDigits(): AnnotatedString = buildAnnotatedString {
+    val s = this@withPlainDigits
+    append(s)
+    var i = 0
+    while (i < s.length) {
+        if (s[i].isDigit()) {
+            val start = i
+            while (i < s.length && s[i].isDigit()) i++
+            addStyle(PlainDigits, start, i)
+        } else {
+            i++
+        }
+    }
+}
+
+/** For text fields that only ever hold numbers. */
+val NumberFieldStyle: TextStyle
+    @Composable get() = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Serif)

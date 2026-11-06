@@ -48,10 +48,12 @@ import com.dnavarro.sidequest.R
 import com.dnavarro.sidequest.model.Skill
 import com.dnavarro.sidequest.model.SkillDraft
 import com.dnavarro.sidequest.ui.components.ArtImage
+import com.dnavarro.sidequest.ui.components.ButtonIcon
 import com.dnavarro.sidequest.ui.components.ScreenTopBar
 import com.dnavarro.sidequest.ui.components.XpBar
 import com.dnavarro.sidequest.ui.components.art
 import com.dnavarro.sidequest.ui.components.withCommas
+import com.dnavarro.sidequest.ui.components.withPlainDigits
 import com.dnavarro.sidequest.ui.theme.Parchment
 import kotlinx.coroutines.delay
 
@@ -116,12 +118,12 @@ fun SkillDetailScreen(
         ScreenTopBar("Skill", onBack)
         ArtImage(skill.icon.art, size = 96.dp)
         Text(
-            skill.name,
+            skill.name.withPlainDigits(),
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
             color = Parchment.Ink,
             textAlign = TextAlign.Center,
         )
-        Text("Level ${skill.level}", style = MaterialTheme.typography.titleLarge, color = Parchment.Wood)
+        Text("Level ${skill.level}".withPlainDigits(), style = MaterialTheme.typography.titleLarge, color = Parchment.Wood)
         val flourish by animateFloatAsState(if (celebrate) 1f else 0f, label = "levelUp")
         Box(Modifier.height(36.dp), contentAlignment = Alignment.Center) {
             Text(
@@ -138,9 +140,9 @@ fun SkillDetailScreen(
         XpBar(skill.xp.toFloat() / skill.xpThreshold)
         Text(
             if (skill.isStepSkill) {
-                "${skill.xp.withCommas()} / ${skill.xpThreshold.withCommas()} steps to next level"
+                "${skill.xp.withCommas()} / ${skill.xpThreshold.withCommas()} steps to next level".withPlainDigits()
             } else {
-                "${skill.xp} / ${skill.xpThreshold} XP"
+                "${skill.xp} / ${skill.xpThreshold} XP".withPlainDigits()
             },
             style = MaterialTheme.typography.bodyMedium,
             color = Parchment.InkFaded,
@@ -150,7 +152,7 @@ fun SkillDetailScreen(
         Spacer(Modifier.height(16.dp))
         val shape = RoundedCornerShape(10.dp)
         Text(
-            skill.description.ifEmpty { "No description yet." },
+            skill.description.ifEmpty { "No description yet." }.withPlainDigits(),
             style = MaterialTheme.typography.bodyLarge.copy(
                 fontStyle = if (skill.description.isEmpty()) FontStyle.Italic else FontStyle.Normal,
             ),
@@ -181,12 +183,12 @@ fun SkillDetailScreen(
             Spacer(Modifier.height(28.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedButton(onClick = { editing = true }) {
-                    Icon(painterResource(R.drawable.ic_edit), contentDescription = null, tint = Parchment.Wood)
+                    ButtonIcon("button_edit", R.drawable.ic_edit, null, Parchment.Wood)
                     Spacer(Modifier.width(6.dp))
                     Text("Edit", color = Parchment.Wood)
                 }
                 OutlinedButton(onClick = { confirmDelete = true }) {
-                    Icon(painterResource(R.drawable.ic_delete), contentDescription = null, tint = Parchment.Crimson)
+                    ButtonIcon("button_delete", R.drawable.ic_delete, null, Parchment.Crimson)
                     Spacer(Modifier.width(6.dp))
                     Text("Delete", color = Parchment.Crimson)
                 }
@@ -199,7 +201,7 @@ fun SkillDetailScreen(
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
             containerColor = Parchment.Paper,
-            title = { Text("Delete ${skill.name}?", color = Parchment.Ink) },
+            title = { Text("Delete ${skill.name}?".withPlainDigits(), color = Parchment.Ink) },
             text = { Text("This removes the skill and all of its progress. It can't be undone.", color = Parchment.Ink) },
             confirmButton = {
                 TextButton(onClick = {
@@ -224,8 +226,9 @@ private fun XpButton(icon: Int, description: String, enabled: Boolean, onClick: 
         colors = ButtonDefaults.buttonColors(
             containerColor = Parchment.Wood,
             contentColor = Parchment.Paper,
-            disabledContainerColor = Parchment.PaperEdge.copy(alpha = 0.5f),
-            disabledContentColor = Parchment.Paper,
+            // Disabled (nothing to remove) still shows the circle, just faded.
+            disabledContainerColor = Parchment.Wood.copy(alpha = 0.35f),
+            disabledContentColor = Parchment.Paper.copy(alpha = 0.8f),
         ),
         modifier = Modifier.size(72.dp),
     ) {
@@ -261,7 +264,7 @@ private fun StepPanel(status: StepStatus) {
             }
             else -> {
                 Text(
-                    "Counting your steps: 1 step = 1 XP. Progress toward the next level resets at midnight; your level stays.",
+                    "Counting your steps: 1 step = 1 XP. Progress toward the next level resets at midnight; your level stays.".withPlainDigits(),
                     style = MaterialTheme.typography.bodyMedium,
                     color = Parchment.InkFaded,
                     textAlign = TextAlign.Center,

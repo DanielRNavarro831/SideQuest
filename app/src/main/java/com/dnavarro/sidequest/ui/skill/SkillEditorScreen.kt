@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -47,6 +48,9 @@ import com.dnavarro.sidequest.model.SkillDraft
 import com.dnavarro.sidequest.model.SkillIcon
 import com.dnavarro.sidequest.model.TextRules
 import com.dnavarro.sidequest.ui.components.ArtImage
+import com.dnavarro.sidequest.ui.components.ButtonIcon
+import com.dnavarro.sidequest.ui.components.NumberFieldStyle
+import com.dnavarro.sidequest.ui.components.withPlainDigits
 import com.dnavarro.sidequest.ui.components.ScreenTopBar
 import com.dnavarro.sidequest.ui.components.SectionLabel
 import com.dnavarro.sidequest.ui.components.art
@@ -85,9 +89,12 @@ fun SkillEditorScreen(
         }
     }
 
+    Column(Modifier.fillMaxSize()) {
+    // The form scrolls; Save/Cancel stay pinned below it.
     Column(
         Modifier
-            .fillMaxSize()
+            .weight(1f)
+            .fillMaxWidth()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp, vertical = 8.dp),
     ) {
@@ -104,7 +111,7 @@ fun SkillEditorScreen(
             singleLine = true,
             isError = nameError != null,
             supportingText = {
-                Text(nameError ?: "${name.text.length} / ${Limits.SKILL_NAME_MAX}")
+                Text((nameError ?: "${name.text.length} / ${Limits.SKILL_NAME_MAX}").withPlainDigits())
             },
             keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.Words,
@@ -123,9 +130,9 @@ fun SkillEditorScreen(
             supportingText = {
                 Text(
                     if (over) {
-                        "${description.length} / ${Limits.DESCRIPTION_MAX} — only the first ${Limits.DESCRIPTION_MAX} will be saved"
+                        "${description.length} / ${Limits.DESCRIPTION_MAX} — only the first ${Limits.DESCRIPTION_MAX} will be saved".withPlainDigits()
                     } else {
-                        "${description.length} / ${Limits.DESCRIPTION_MAX}"
+                        "${description.length} / ${Limits.DESCRIPTION_MAX}".withPlainDigits()
                     },
                     color = if (over) Parchment.Crimson else Parchment.InkFaded,
                 )
@@ -141,6 +148,7 @@ fun SkillEditorScreen(
         SectionLabel("XP to level up")
         OutlinedTextField(
             value = threshold,
+            textStyle = NumberFieldStyle,
             onValueChange = {
                 threshold = TextRules.filterDigits(it)
                 thresholdError = null
@@ -149,7 +157,7 @@ fun SkillEditorScreen(
             isError = thresholdError != null,
             supportingText = {
                 val hint = if (showThresholdHint) "Changing this recalculates the level from all XP ever earned." else null
-                (thresholdError ?: hint)?.let { Text(it) }
+                (thresholdError ?: hint)?.let { Text(it.withPlainDigits()) }
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             colors = parchmentFieldColors(),
@@ -158,20 +166,28 @@ fun SkillEditorScreen(
 
         SectionLabel("Icon")
         IconPicker(selected = icon, onSelect = { icon = it })
+        Spacer(Modifier.height(12.dp))
+    }
 
-        Spacer(Modifier.height(20.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End)) {
-            OutlinedButton(onClick = onCancel) { Text("Cancel", color = Parchment.Wood) }
-            Button(
-                onClick = save,
-                colors = ButtonDefaults.buttonColors(containerColor = Parchment.Wood, contentColor = Parchment.Paper),
-            ) {
-                Icon(painterResource(R.drawable.ic_check), contentDescription = null)
-                Spacer(Modifier.width(6.dp))
-                Text("Save")
-            }
+    Box(Modifier.fillMaxWidth().height(1.dp).background(Parchment.PaperEdge.copy(alpha = 0.6f)))
+    Row(
+        Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
+    ) {
+        OutlinedButton(onClick = onCancel) {
+            ButtonIcon("button_cancel", R.drawable.ic_close, null, Parchment.Wood)
+            Spacer(Modifier.width(6.dp))
+            Text("Cancel", color = Parchment.Wood)
         }
-        Spacer(Modifier.height(24.dp))
+        Button(
+            onClick = save,
+            colors = ButtonDefaults.buttonColors(containerColor = Parchment.Wood, contentColor = Parchment.Paper),
+        ) {
+            ButtonIcon("button_save", R.drawable.ic_check, null, Parchment.Paper)
+            Spacer(Modifier.width(6.dp))
+            Text("Save")
+        }
+    }
     }
 }
 

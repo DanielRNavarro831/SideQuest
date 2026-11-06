@@ -1,6 +1,11 @@
 package com.dnavarro.sidequest.ui.components
 
 import android.annotation.SuppressLint
+import androidx.annotation.DrawableRes
+import androidx.compose.material3.Icon
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -59,6 +64,39 @@ val CharacterClass.art: ArtSpec
         CharacterClass.ROGUE -> ArtSpec("Rogue", "🥷", "hero_rogue")
         CharacterClass.BARD -> ArtSpec("Bard", "🪕", "hero_bard")
     }
+
+/**
+ * A button icon that uses custom art when res/drawable-nodpi/[artName].png exists (shown
+ * untinted at [artSize]), and otherwise the built-in vector [fallback] tinted with [tint].
+ */
+@SuppressLint("DiscouragedApi")
+@Composable
+fun ButtonIcon(
+    artName: String,
+    @DrawableRes fallback: Int,
+    contentDescription: String?,
+    tint: Color,
+    modifier: Modifier = Modifier,
+    artSize: Dp = 30.dp,
+) {
+    val context = LocalContext.current
+    val resId = remember(artName) {
+        context.resources.getIdentifier(artName, "drawable", context.packageName)
+    }
+    if (resId != 0) {
+        val bitmap = ImageBitmap.imageResource(resId)
+        val boxPx = with(LocalDensity.current) { artSize.roundToPx() }
+        Image(
+            bitmap = bitmap,
+            contentDescription = contentDescription,
+            modifier = modifier.size(artSize),
+            contentScale = ContentScale.Fit,
+            filterQuality = if (bitmap.width < boxPx) FilterQuality.None else FilterQuality.High,
+        )
+    } else {
+        Icon(painterResource(fallback), contentDescription, modifier.size(24.dp), tint = tint)
+    }
+}
 
 @SuppressLint("DiscouragedApi") // Looked up by name so art can be added without code changes.
 @Composable

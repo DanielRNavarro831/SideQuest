@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Art is looked up by name at runtime (see Art.kt), so keep it if resource shrinking is ever enabled. -->
 <resources xmlns:tools="http://schemas.android.com/tools"
-    tools:keep="@drawable/hero_*,@drawable/skill_*" />
+    tools:keep="@drawable/hero_*,@drawable/skill_*,@drawable/button_*" />

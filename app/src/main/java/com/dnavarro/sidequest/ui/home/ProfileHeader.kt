@@ -51,7 +51,10 @@ import com.dnavarro.sidequest.model.OverallLevelSettings
 import com.dnavarro.sidequest.model.Profile
 import com.dnavarro.sidequest.model.TextRules
 import com.dnavarro.sidequest.ui.components.ArtImage
+import com.dnavarro.sidequest.ui.components.ButtonIcon
 import com.dnavarro.sidequest.ui.components.EditableText
+import com.dnavarro.sidequest.ui.components.NumberFieldStyle
+import com.dnavarro.sidequest.ui.components.withPlainDigits
 import com.dnavarro.sidequest.ui.components.XpBar
 import com.dnavarro.sidequest.ui.components.art
 import com.dnavarro.sidequest.ui.components.parchmentFieldColors
@@ -109,14 +112,25 @@ fun ProfileHeader(
         val progress = overall.progress
         val goal = overall.progressGoal
         if (profile.levelSettings.mode == LevelMode.EVERY_X && progress != null && goal != null) {
-            Spacer(Modifier.padding(top = 10.dp))
-            XpBar(progress.toFloat() / goal, color = Parchment.Gold)
-            Text(
-                "$progress / $goal skill level-ups to next level",
-                style = MaterialTheme.typography.labelSmall,
-                color = Parchment.InkFaded,
-                modifier = Modifier.padding(top = 2.dp),
-            )
+            // A light panel keeps the bar and its caption readable over the parchment's shading.
+            val panel = RoundedCornerShape(10.dp)
+            Column(
+                Modifier
+                    .padding(top = 10.dp)
+                    .fillMaxWidth()
+                    .clip(panel)
+                    .background(Parchment.Paper.copy(alpha = 0.9f))
+                    .border(1.dp, Parchment.PaperEdge, panel)
+                    .padding(horizontal = 10.dp, vertical = 8.dp),
+            ) {
+                XpBar(progress.toFloat() / goal, color = Parchment.Gold)
+                Text(
+                    "$progress / $goal skill level-ups to next level".withPlainDigits(),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Parchment.Ink,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
         }
 
         AnimatedVisibility(visible = editingLevel) {
@@ -171,7 +185,7 @@ private fun LevelBadge(level: Int, onClick: () -> Unit) {
     ) {
         Text("LEVEL", style = MaterialTheme.typography.labelSmall, color = Parchment.InkFaded, letterSpacing = 1.5.sp)
         Text(
-            "$level",
+            "$level".withPlainDigits(),
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
             color = Parchment.Wood,
         )
@@ -216,10 +230,10 @@ private fun LevelModeEditor(
                 modifier = Modifier.weight(1f).padding(start = 8.dp),
             )
             IconButton(onClick = onCancel) {
-                Icon(painterResource(R.drawable.ic_close), contentDescription = "Cancel", tint = Parchment.InkFaded)
+                ButtonIcon("button_cancel", R.drawable.ic_close, "Cancel", Parchment.InkFaded, artSize = 28.dp)
             }
             IconButton(onClick = save) {
-                Icon(painterResource(R.drawable.ic_check), contentDescription = "Save", tint = Parchment.Wood)
+                ButtonIcon("button_save", R.drawable.ic_check, "Save", Parchment.Wood, artSize = 28.dp)
             }
         }
         LevelModeOption("Average", "The average of all your skill levels", mode == LevelMode.AVERAGE) {
@@ -242,6 +256,7 @@ private fun LevelModeEditor(
                 },
                 label = { Text("X") },
                 singleLine = true,
+                textStyle = NumberFieldStyle,
                 isError = xError != null,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                 colors = parchmentFieldColors(),
@@ -249,7 +264,7 @@ private fun LevelModeEditor(
             )
             xError?.let {
                 Text(
-                    it,
+                    it.withPlainDigits(),
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(start = 48.dp, top = 4.dp),

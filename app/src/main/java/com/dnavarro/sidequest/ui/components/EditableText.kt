@@ -56,7 +56,7 @@ fun EditableText(
     if (!editing) {
         val empty = value.isEmpty()
         Text(
-            text = if (empty) placeholder else value,
+            text = (if (empty) placeholder else value).withPlainDigits(),
             style = if (empty) textStyle.copy(color = Parchment.InkFaded, fontStyle = FontStyle.Italic) else textStyle,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -102,7 +102,7 @@ fun EditableText(
             placeholder = { Text(placeholder, style = textStyle, color = Parchment.InkFaded) },
             trailingIcon = {
                 IconButton(onClick = save) {
-                    Icon(painterResource(R.drawable.ic_check), contentDescription = "Save", tint = Parchment.Wood)
+                    ButtonIcon("button_save", R.drawable.ic_check, "Save", Parchment.Wood, artSize = 28.dp)
                 }
             },
             keyboardOptions = KeyboardOptions(
@@ -114,7 +114,7 @@ fun EditableText(
             modifier = Modifier.fillMaxWidth().focusRequester(focus),
         )
         errorText?.let {
-            Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            Text(it.withPlainDigits(), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
         }
     }
 }
