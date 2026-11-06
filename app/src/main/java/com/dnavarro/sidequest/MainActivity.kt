@@ -13,6 +13,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import com.dnavarro.sidequest.ui.components.CelebrationHost
+import com.dnavarro.sidequest.model.Celebration
+import androidx.compose.ui.Modifier
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -107,6 +113,14 @@ private fun SideQuestRoot(vm: MainViewModel = viewModel()) {
     }
     var tab by rememberSaveable { mutableStateOf(HomeTab.SKILLS) }
 
+    // ---- Fanfare ----
+    val celebrations by vm.celebrations.collectAsStateWithLifecycle()
+    var celebrationsPlayed by remember { mutableIntStateOf(0) }
+    // Bumped after a hero level-up banner closes, so the level badge pulses once you can see it.
+    var badgePulses by remember { mutableIntStateOf(0) }
+    var badgePulsesPlayed by remember { mutableIntStateOf(0) }
+
+    Box(Modifier.fillMaxSize()) {
     ScrollParchment {
         when {
             route == ROUTE_NEW_QUEST -> QuestEditorScreen(
@@ -169,7 +183,21 @@ private fun SideQuestRoot(vm: MainViewModel = viewModel()) {
                 onOpenQuest = { route = QUEST_PREFIX + it },
                 onToggleQuest = { if (it.isCompleted) vm.uncompleteQuest(it.id) else vm.completeQuest(it.id) },
                 onNewQuest = { route = ROUTE_NEW_QUEST },
+                badgePulses = badgePulses,
+                badgePulsesPlayed = badgePulsesPlayed,
+                onBadgePulsed = { badgePulsesPlayed = it },
             )
         }
+    }
+    val current = celebrations.firstOrNull()
+    CelebrationHost(
+        playKey = celebrationsPlayed,
+        celebration = current,
+        onDone = {
+            if (current is Celebration.HeroLevelUp) badgePulses++
+            celebrationsPlayed++
+            vm.celebrationDone()
+        },
+    )
     }
 }

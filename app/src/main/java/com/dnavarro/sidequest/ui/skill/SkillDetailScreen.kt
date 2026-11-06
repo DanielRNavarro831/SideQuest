@@ -93,21 +93,6 @@ fun SkillDetailScreen(
         return
     }
 
-    // Brief "Level up!" flourish whenever the level goes up while you're watching.
-    var shownLevel by remember(skill.id) { mutableIntStateOf(skill.level) }
-    var celebrate by remember { mutableStateOf(false) }
-    LaunchedEffect(skill.level) {
-        if (skill.level > shownLevel) {
-            shownLevel = skill.level
-            celebrate = true
-            delay(1600)
-            celebrate = false
-        } else {
-            shownLevel = skill.level
-            celebrate = false
-        }
-    }
-
     Column(
         Modifier
             .fillMaxSize()
@@ -124,19 +109,7 @@ fun SkillDetailScreen(
             textAlign = TextAlign.Center,
         )
         Text("Level ${skill.level}".withPlainDigits(), style = MaterialTheme.typography.titleLarge, color = Parchment.Wood)
-        val flourish by animateFloatAsState(if (celebrate) 1f else 0f, label = "levelUp")
-        Box(Modifier.height(36.dp), contentAlignment = Alignment.Center) {
-            Text(
-                "LEVEL UP!",
-                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                color = Parchment.Gold,
-                modifier = Modifier.graphicsLayer {
-                    alpha = flourish
-                    scaleX = 0.6f + 0.4f * flourish
-                    scaleY = 0.6f + 0.4f * flourish
-                },
-            )
-        }
+        Spacer(Modifier.height(12.dp))
         XpBar(skill.xp.toFloat() / skill.xpThreshold)
         Text(
             if (skill.isStepSkill) {

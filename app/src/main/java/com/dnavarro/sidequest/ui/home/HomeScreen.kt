@@ -22,6 +22,20 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.Animatable
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -71,7 +85,19 @@ fun HomeScreen(
     onOpenQuest: (String) -> Unit,
     onToggleQuest: (Quest) -> Unit,
     onNewQuest: () -> Unit,
+    badgePulses: Int = 0,
+    badgePulsesPlayed: Int = badgePulses,
+    onBadgePulsed: (Int) -> Unit = {},
 ) {
+    // Swiping the list and tapping a tab button both move the same pager.
+    val pagerState = rememberPagerState(initialPage = tab.ordinal) { HomeTab.entries.size }
+    val scope = rememberCoroutineScope()
+    val shown = HomeTab.entries[pagerState.currentPage]
+    val latestOnTab by rememberUpdatedState(onTab)
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }.collect { latestOnTab(HomeTab.entries[it]) }
+    }
+
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
             // Pinned: the profile and tabs never scroll away.
@@ -82,14 +108,24 @@ fun HomeScreen(
                 onTitle = onTitle,
                 onCharacter = onCharacter,
                 onLevelSettings = onLevelSettings,
+                badgePulses = badgePulses,
+                badgePulsesPlayed = badgePulsesPlayed,
+                onBadgePulsed = onBadgePulsed,
             )
-            HomeTabs(tab, onTab)
-            when (tab) {
-                HomeTab.SKILLS -> SkillList(state.sortedSkills, onOpenSkill, Modifier.weight(1f))
-                HomeTab.QUESTS -> QuestList(state, onOpenQuest, onToggleQuest, Modifier.weight(1f))
+            HomeTabs(shown) { scope.launch { pagerState.animateScrollToPage(it.ordinal) } }
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                verticalAlignment = Alignment.Top,
+                beyondViewportPageCount = 1,
+            ) { page ->
+                when (HomeTab.entries[page]) {
+                    HomeTab.SKILLS -> SkillList(state.sortedSkills, onOpenSkill, Modifier.fillMaxSize())
+                    HomeTab.QUESTS -> QuestList(state, onOpenQuest, onToggleQuest, Modifier.fillMaxSize())
+                }
             }
         }
-        val isQuests = tab == HomeTab.QUESTS
+        val isQuests = shown == HomeTab.QUESTS
         ExtendedFloatingActionButton(
             onClick = if (isQuests) onNewQuest else onNewSkill,
             containerColor = Parchment.Wood,
@@ -234,6 +270,19 @@ private fun RenownPanel(renownXp: Long) {
 private fun QuestRow(quest: Quest, onClick: () -> Unit, onToggle: () -> Unit, modifier: Modifier = Modifier) {
     val shape = RoundedCornerShape(10.dp)
     val done = quest.isCompleted
+    // A quest finished a moment ago gets a gold flash and its checkmark stamps in.
+    val justDone = remember(quest.completedAt) {
+        val at = quest.completedAt
+        at != null && System.currentTimeMillis() - at < 1500
+    }
+    val flash = remember(quest.completedAt) { Animatable(if (justDone) 1f else 0f) }
+    val stamp = remember(quest.completedAt) { Animatable(if (justDone) 0.4f else 1f) }
+    LaunchedEffect(quest.completedAt) {
+        if (justDone) {
+            launch { stamp.animateTo(1f, spring(dampingRatio = 0.35f, stiffness = Spring.StiffnessMedium)) }
+            flash.animateTo(0f, tween(1100))
+        }
+    }
     Row(
         modifier
             .fillMaxWidth()
@@ -241,6 +290,7 @@ private fun QuestRow(quest: Quest, onClick: () -> Unit, onToggle: () -> Unit, mo
             .alpha(if (done) 0.5f else 1f)
             .clip(shape)
             .background(Parchment.PaperShade.copy(alpha = 0.55f))
+            .background(Parchment.Gold.copy(alpha = 0.55f * flash.value))
             .border(1.dp, Parchment.PaperEdge, shape)
             .clickable(onClick = onClick)
             .padding(start = 10.dp, top = 6.dp, bottom = 6.dp, end = 2.dp),
@@ -275,6 +325,10 @@ private fun QuestRow(quest: Quest, onClick: () -> Unit, onToggle: () -> Unit, mo
             modifier = Modifier.padding(start = 8.dp),
         )
         Checkbox(
+            modifier = Modifier.graphicsLayer {
+                scaleX = stamp.value
+                scaleY = stamp.value
+            },
             checked = done,
             onCheckedChange = { onToggle() },
             colors = CheckboxDefaults.colors(

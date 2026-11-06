@@ -25,6 +25,12 @@ import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.shadow
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.Animatable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -68,6 +74,9 @@ fun ProfileHeader(
     onTitle: (String) -> Unit,
     onCharacter: (CharacterClass) -> Unit,
     onLevelSettings: (OverallLevelSettings) -> Unit,
+    badgePulses: Int = 0,
+    onBadgePulsed: (Int) -> Unit = {},
+    badgePulsesPlayed: Int = badgePulses,
 ) {
     var pickingCharacter by rememberSaveable { mutableStateOf(false) }
     var editingLevel by rememberSaveable { mutableStateOf(false) }
@@ -106,7 +115,7 @@ fun ProfileHeader(
                 )
             }
             Spacer(Modifier.width(8.dp))
-            LevelBadge(overall.level, onClick = { editingLevel = !editingLevel })
+            LevelBadge(overall.level, badgePulses, badgePulsesPlayed, onBadgePulsed, onClick = { editingLevel = !editingLevel })
         }
 
         val progress = overall.progress
@@ -172,13 +181,30 @@ private fun Portrait(character: CharacterClass, size: Dp, modifier: Modifier = M
 }
 
 @Composable
-private fun LevelBadge(level: Int, onClick: () -> Unit) {
+private fun LevelBadge(level: Int, pulses: Int, played: Int, onPulsed: (Int) -> Unit, onClick: () -> Unit) {
     val shape = RoundedCornerShape(12.dp)
+    // After a hero level-up banner, throb a few times the next time the badge is on screen.
+    val pulse = remember { Animatable(0f) }
+    LaunchedEffect(pulses) {
+        if (pulses > played) {
+            onPulsed(pulses)
+            repeat(3) {
+                pulse.animateTo(1f, tween(220))
+                pulse.animateTo(0f, tween(260))
+            }
+        }
+    }
     Column(
         Modifier
+            .graphicsLayer {
+                val s = 1f + 0.18f * pulse.value
+                scaleX = s
+                scaleY = s
+            }
+            .shadow((10 * pulse.value).dp, shape, ambientColor = Parchment.Gold, spotColor = Parchment.Gold)
             .clip(shape)
             .background(Parchment.PaperShade)
-            .border(2.dp, Parchment.Gold, shape)
+            .border((2 + 2 * pulse.value).dp, Parchment.Gold, shape)
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
