@@ -184,7 +184,13 @@ private fun SideQuestRoot(vm: MainViewModel = viewModel()) {
             else -> HomeScreen(
                 state = state,
                 tab = tab,
-                onTab = { tab = it },
+                onTab = {
+                    // The pager reports its page on every return to home; only real switches turn a page.
+                    if (it != tab) {
+                        tab = it
+                        if (state.profile.soundOn) sounds.playTabSwitch()
+                    }
+                },
                 onName = vm::setName,
                 onTitle = vm::setTitle,
                 onCharacter = vm::setCharacter,
