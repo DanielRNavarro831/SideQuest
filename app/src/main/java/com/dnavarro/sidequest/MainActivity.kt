@@ -13,6 +13,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import com.dnavarro.sidequest.ui.settings.SettingsScreen
 import com.dnavarro.sidequest.sound.rememberSoundEffects
 import com.dnavarro.sidequest.ui.components.CelebrationHost
 import com.dnavarro.sidequest.model.Celebration
@@ -63,6 +64,7 @@ private const val ROUTE_NEW = "new"
 private const val SKILL_PREFIX = "skill/"
 private const val ROUTE_NEW_QUEST = "new-quest"
 private const val QUEST_PREFIX = "quest/"
+private const val ROUTE_SETTINGS = "settings"
 
 @Composable
 private fun SideQuestRoot(vm: MainViewModel = viewModel()) {
@@ -125,6 +127,13 @@ private fun SideQuestRoot(vm: MainViewModel = viewModel()) {
     Box(Modifier.fillMaxSize()) {
     ScrollParchment {
         when {
+            route == ROUTE_SETTINGS -> SettingsScreen(
+                profile = state.profile,
+                stepStatus = stepStatus,
+                onLevelSettings = vm::setLevelSettings,
+                onSound = vm::setSound,
+                onBack = { route = ROUTE_HOME },
+            )
             route == ROUTE_NEW_QUEST -> QuestEditorScreen(
                 heading = "New Quest",
                 initial = remember { QuestDraft.newQuest() },
@@ -179,8 +188,7 @@ private fun SideQuestRoot(vm: MainViewModel = viewModel()) {
                 onName = vm::setName,
                 onTitle = vm::setTitle,
                 onCharacter = vm::setCharacter,
-                onLevelSettings = vm::setLevelSettings,
-                onSound = vm::setSound,
+                onOpenSettings = { route = ROUTE_SETTINGS },
                 onOpenSkill = { route = SKILL_PREFIX + it },
                 onNewSkill = { route = ROUTE_NEW },
                 onOpenQuest = { route = QUEST_PREFIX + it },

@@ -82,14 +82,12 @@ fun ProfileHeader(
     onName: (String) -> Unit,
     onTitle: (String) -> Unit,
     onCharacter: (CharacterClass) -> Unit,
-    onLevelSettings: (OverallLevelSettings) -> Unit,
-    onSound: (Boolean) -> Unit = {},
+    onOpenSettings: () -> Unit,
     badgePulses: Int = 0,
     onBadgePulsed: (Int) -> Unit = {},
     badgePulsesPlayed: Int = badgePulses,
 ) {
     var pickingCharacter by rememberSaveable { mutableStateOf(false) }
-    var editingLevel by rememberSaveable { mutableStateOf(false) }
 
     // Light side padding: the scroll already keeps content clear of the torn paper edges.
     Column(Modifier.fillMaxWidth().padding(start = 6.dp, end = 6.dp, top = 14.dp, bottom = 4.dp)) {
@@ -129,7 +127,7 @@ fun ProfileHeader(
                 )
             }
             Spacer(Modifier.width(8.dp))
-            LevelBadge(overall.level, badgePulses, badgePulsesPlayed, onBadgePulsed, onClick = { editingLevel = !editingLevel })
+            LevelBadge(overall.level, badgePulses, badgePulsesPlayed, onBadgePulsed, onClick = onOpenSettings)
         }
 
         val progress = overall.progress
@@ -154,19 +152,6 @@ fun ProfileHeader(
                     modifier = Modifier.padding(top = 4.dp),
                 )
             }
-        }
-
-        AnimatedVisibility(visible = editingLevel) {
-            LevelModeEditor(
-                current = profile.levelSettings,
-                soundOn = profile.soundOn,
-                onSound = onSound,
-                onSave = {
-                    onLevelSettings(it)
-                    editingLevel = false
-                },
-                onCancel = { editingLevel = false },
-            )
         }
     }
 
@@ -241,142 +226,6 @@ private fun LevelBadge(level: Int, pulses: Int, played: Int, onPulsed: (Int) -> 
                 color = lerp(Parchment.Wood, Parchment.Gold, pulse.value),
                 maxLines = 1,
             )
-        }
-    }
-}
-
-@Composable
-private fun LevelModeEditor(
-    current: OverallLevelSettings,
-    soundOn: Boolean,
-    onSound: (Boolean) -> Unit,
-    onSave: (OverallLevelSettings) -> Unit,
-    onCancel: () -> Unit,
-) {
-    var mode by rememberSaveable { mutableStateOf(current.mode) }
-    var xText by rememberSaveable { mutableStateOf(current.x.toString()) }
-    var xError by rememberSaveable { mutableStateOf<String?>(null) }
-    BackHandler(onBack = onCancel)
-
-    val save: () -> Unit = {
-        val x =if (mode == LevelMode.EVERY_X) xText.toIntOrNull() else current.x
-        if (mode == LevelMode.EVERY_X && (x == null || x < Limits.X_MIN)) {
-            xError = "* X must be higher than 1"
-        } else {
-            onSave(OverallLevelSettings(mode, x ?: current.x))
-        }
-    }
-
-    val shape = RoundedCornerShape(12.dp)
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .padding(top = 10.dp)
-            .clip(shape)
-            .background(Parchment.PaperShade.copy(alpha = 0.6f))
-            .border(1.dp, Parchment.PaperEdge, shape)
-            .padding(horizontal = 8.dp, vertical = 4.dp),
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                "How is your level calculated?",
-                style = MaterialTheme.typography.titleSmall,
-                color = Parchment.Ink,
-                modifier = Modifier.weight(1f).padding(start = 8.dp),
-            )
-            IconButton(onClick = onCancel) {
-                ButtonIcon("button_cancel", R.drawable.ic_close, "Cancel", Parchment.InkFaded, artSize = 28.dp)
-            }
-            IconButton(onClick = save) {
-                ButtonIcon("button_edit", R.drawable.ic_check, "Save", Parchment.Wood, artSize = 28.dp)
-            }
-        }
-        LevelModeOption("Average", "The average of your skill levels, with Renown added as level-ups", mode == LevelMode.AVERAGE) {
-            mode = LevelMode.AVERAGE
-            xError = null
-        }
-        LevelModeOption("Sum", "All your skill levels plus your Renown", mode == LevelMode.SUM) {
-            mode = LevelMode.SUM
-            xError = null
-        }
-        LevelModeOption("Every X Skill Level Ups", "Gain a level every X skill level-ups (Renown counts too)", mode == LevelMode.EVERY_X) {
-            mode = LevelMode.EVERY_X
-        }
-        if (mode == LevelMode.EVERY_X) {
-            OutlinedTextField(
-                value = xText,
-                onValueChange = {
-                    xText = TextRules.filterDigits(it)
-                    xError = null
-                },
-                label = { Text("X") },
-                singleLine = true,
-                textStyle = NumberFieldStyle,
-                isError = xError != null,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                colors = parchmentFieldColors(),
-                modifier = Modifier.padding(start = 48.dp).width(120.dp),
-            )
-            xError?.let {
-                Text(
-                    it.withPlainDigits(),
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(start = 48.dp, top = 4.dp),
-                )
-            }
-            Spacer(Modifier.padding(bottom = 8.dp))
-        }
-        // Not about levels, but this panel is the app's settings spot for now.
-        Box(Modifier.fillMaxWidth().padding(horizontal = 8.dp).height(1.dp).background(Parchment.PaperEdge))
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .toggleable(value = soundOn, onValueChange = onSound, role = Role.Switch)
-                .padding(start = 12.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(Modifier.weight(1f)) {
-                Text("Sound effects", style = MaterialTheme.typography.bodyLarge, color = Parchment.Ink)
-                Text(
-                    "Plays on level-ups and finished quests. Always quiet when your phone is on silent.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Parchment.InkFaded,
-                )
-            }
-            Switch(
-                checked = soundOn,
-                onCheckedChange = null,
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = Parchment.Paper,
-                    checkedTrackColor = Parchment.Wood,
-                    uncheckedThumbColor = Parchment.WoodLight,
-                    uncheckedTrackColor = Parchment.PaperShade,
-                    uncheckedBorderColor = Parchment.PaperEdge,
-                ),
-            )
-        }
-    }
-}
-
-@Composable
-private fun LevelModeOption(title: String, subtitle: String, selected: Boolean, onSelect: () -> Unit) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .selectable(selected = selected, onClick = onSelect, role = Role.RadioButton)
-            .padding(vertical = 2.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        RadioButton(
-            selected = selected,
-            onClick = null,
-            colors = RadioButtonDefaults.colors(selectedColor = Parchment.Wood, unselectedColor = Parchment.InkFaded),
-            modifier = Modifier.padding(12.dp),
-        )
-        Column {
-            Text(title, style = MaterialTheme.typography.bodyLarge, color = Parchment.Ink)
-            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = Parchment.InkFaded)
         }
     }
 }

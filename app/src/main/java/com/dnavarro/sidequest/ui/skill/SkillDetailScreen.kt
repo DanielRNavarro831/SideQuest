@@ -242,18 +242,13 @@ private fun StepPanel(status: StepStatus) {
                     color = Parchment.InkFaded,
                     textAlign = TextAlign.Center,
                 )
-                if (status.notificationShown) {
-                    Spacer(Modifier.height(8.dp))
-                    TextButton(onClick = status.onHideNotification) {
-                        Text("Hide the step-counting notification", color = Parchment.Wood)
-                    }
-                    Text(
-                        "Turn it off on the next screen. Steps keep counting.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Parchment.InkFaded,
-                        textAlign = TextAlign.Center,
-                    )
-                }
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    "The step-counting notification can be hidden in Settings.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Parchment.InkFaded,
+                    textAlign = TextAlign.Center,
+                )
             }
         }
     }

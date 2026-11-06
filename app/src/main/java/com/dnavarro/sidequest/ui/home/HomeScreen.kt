@@ -22,6 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.animation.core.tween
@@ -79,8 +80,7 @@ fun HomeScreen(
     onName: (String) -> Unit,
     onTitle: (String) -> Unit,
     onCharacter: (CharacterClass) -> Unit,
-    onLevelSettings: (OverallLevelSettings) -> Unit,
-    onSound: (Boolean) -> Unit = {},
+    onOpenSettings: () -> Unit,
     onOpenSkill: (String) -> Unit,
     onNewSkill: () -> Unit,
     onOpenQuest: (String) -> Unit,
@@ -108,13 +108,12 @@ fun HomeScreen(
                 onName = onName,
                 onTitle = onTitle,
                 onCharacter = onCharacter,
-                onLevelSettings = onLevelSettings,
-                onSound = onSound,
+                onOpenSettings = onOpenSettings,
                 badgePulses = badgePulses,
                 badgePulsesPlayed = badgePulsesPlayed,
                 onBadgePulsed = onBadgePulsed,
             )
-            HomeTabs(shown) { scope.launch { pagerState.animateScrollToPage(it.ordinal) } }
+            HomeTabs(shown, onSettings = onOpenSettings) { scope.launch { pagerState.animateScrollToPage(it.ordinal) } }
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.weight(1f).fillMaxWidth(),
@@ -142,7 +141,7 @@ fun HomeScreen(
 private val ListPadding = PaddingValues(start = 4.dp, end = 4.dp, top = 4.dp, bottom = 88.dp)
 
 @Composable
-private fun HomeTabs(selected: HomeTab, onSelect: (HomeTab) -> Unit) {
+private fun HomeTabs(selected: HomeTab, onSettings: () -> Unit, onSelect: (HomeTab) -> Unit) {
     // Two chunky buttons: the selected one is filled wood (like the New Skill button),
     // the other is a raised parchment button.
     Row(
@@ -186,6 +185,20 @@ private fun HomeTabs(selected: HomeTab, onSelect: (HomeTab) -> Unit) {
                     )
                 }
             }
+        }
+        // Settings: a square button matching the unselected tabs.
+        val gearShape = RoundedCornerShape(12.dp)
+        Box(
+            Modifier
+                .size(46.dp)
+                .shadow(2.dp, gearShape)
+                .clip(gearShape)
+                .background(Parchment.Paper)
+                .border(1.dp, Parchment.PaperEdge, gearShape)
+                .clickable(onClickLabel = "Settings", onClick = onSettings),
+            contentAlignment = Alignment.Center,
+        ) {
+            ButtonIcon("button_settings", R.drawable.ic_settings, "Settings", Parchment.Wood, artSize = 30.dp)
         }
     }
 }
