@@ -125,7 +125,7 @@ fun ProfileHeader(
             ) {
                 XpBar(progress.toFloat() / goal, color = Parchment.Gold)
                 Text(
-                    "$progress / $goal skill level-ups to next level".withPlainDigits(),
+                    "$progress / $goal level-ups to next level".withPlainDigits(),
                     style = MaterialTheme.typography.labelMedium,
                     color = Parchment.Ink,
                     modifier = Modifier.padding(top = 4.dp),
@@ -233,18 +233,18 @@ private fun LevelModeEditor(
                 ButtonIcon("button_cancel", R.drawable.ic_close, "Cancel", Parchment.InkFaded, artSize = 28.dp)
             }
             IconButton(onClick = save) {
-                ButtonIcon("button_save", R.drawable.ic_check, "Save", Parchment.Wood, artSize = 28.dp)
+                ButtonIcon("button_edit", R.drawable.ic_check, "Save", Parchment.Wood, artSize = 28.dp)
             }
         }
-        LevelModeOption("Average", "The average of all your skill levels", mode == LevelMode.AVERAGE) {
+        LevelModeOption("Average", "The average of your skill levels, with Renown added as level-ups", mode == LevelMode.AVERAGE) {
             mode = LevelMode.AVERAGE
             xError = null
         }
-        LevelModeOption("Sum", "All your skill levels added together", mode == LevelMode.SUM) {
+        LevelModeOption("Sum", "All your skill levels plus your Renown", mode == LevelMode.SUM) {
             mode = LevelMode.SUM
             xError = null
         }
-        LevelModeOption("Every X Skill Level Ups", "Gain a level each time your skills level up X times", mode == LevelMode.EVERY_X) {
+        LevelModeOption("Every X Skill Level Ups", "Gain a level every X skill level-ups (Renown counts too)", mode == LevelMode.EVERY_X) {
             mode = LevelMode.EVERY_X
         }
         if (mode == LevelMode.EVERY_X) {

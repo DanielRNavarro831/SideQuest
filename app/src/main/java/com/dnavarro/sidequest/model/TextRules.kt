@@ -4,6 +4,9 @@ object Limits {
     const val NAME_MAX = 32
     const val TITLE_MAX = 32
     const val SKILL_NAME_MAX = 16
+    const val QUEST_NAME_MAX = 24
+    const val QUEST_XP_MIN = 1
+    const val QUEST_XP_MAX = 9999
     const val DESCRIPTION_MAX = 64
     const val THRESHOLD_MIN = 1
     const val THRESHOLD_MAX = 9999

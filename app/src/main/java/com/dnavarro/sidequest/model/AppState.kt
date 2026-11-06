@@ -20,9 +20,18 @@ data class AppState(
     val profile: Profile = Profile(),
     val skills: List<Skill> = listOf(Skill.dailyAdventure()),
     val steps: StepTracking = StepTracking(),
+    val quests: List<Quest> = emptyList(),
+    /** All XP ever earned from quests. Kept apart from [quests] so pruning old ones loses nothing. */
+    val renownXp: Long = 0,
 ) {
     val overallLevel: OverallLevel
-        get() = OverallLevelCalculator.calculate(skills, profile.levelSettings)
+        get() = OverallLevelCalculator.calculate(skills, profile.levelSettings, Renown.ranks(renownXp))
+
+    val sortedSkills: List<Skill> get() = Sorting.skills(skills)
+    val activeQuests: List<Quest> get() = Sorting.activeQuests(quests)
+    val completedQuests: List<Quest> get() = Sorting.completedQuests(quests)
+
+    fun quest(id: String): Quest? = quests.firstOrNull { it.id == id }
 
     fun skill(id: String): Skill? = skills.firstOrNull { it.id == id }
 
@@ -86,6 +95,60 @@ data class AppState(
     /** The step skill can't be edited, deleted or manually adjusted. */
     private inline fun updateEditable(id: String, transform: (Skill) -> Skill): AppState =
         copy(skills = skills.map { if (it.id == id && !it.isStepSkill) transform(it) else it })
+
+    // ---- Quests ----
+
+    fun addQuest(id: String, draft: QuestDraft): AppState {
+        val name = TextRules.cleanName(draft.name, Limits.QUEST_NAME_MAX)
+        if (name.isEmpty() || quests.any { it.id == id }) return this
+        val quest = Quest(
+            id = id,
+            name = name,
+            description = TextRules.cleanDescription(draft.description),
+            icon = draft.icon,
+            xp = draft.xp.coerceIn(Limits.QUEST_XP_MIN, Limits.QUEST_XP_MAX),
+        )
+        return copy(quests = quests + quest)
+    }
+
+    /** A completed quest's XP is locked, since it's already been banked as Renown. */
+    fun editQuest(id: String, draft: QuestDraft): AppState = updateQuest(id) { quest ->
+        val name = TextRules.cleanName(draft.name, Limits.QUEST_NAME_MAX)
+        if (name.isEmpty()) return@updateQuest quest
+        quest.copy(
+            name = name,
+            description = TextRules.cleanDescription(draft.description),
+            icon = draft.icon,
+            xp = if (quest.isCompleted) quest.xp else draft.xp.coerceIn(Limits.QUEST_XP_MIN, Limits.QUEST_XP_MAX),
+        )
+    }
+
+    /** Deleting never takes back Renown already earned. */
+    fun deleteQuest(id: String): AppState = copy(quests = quests.filterNot { it.id == id })
+
+    fun completeQuest(id: String, nowMillis: Long): AppState {
+        val quest = quest(id) ?: return this
+        if (quest.isCompleted) return this
+        val done = copy(
+            quests = quests.map { if (it.id == id) it.copy(completedAt = nowMillis) else it },
+            renownXp = renownXp + quest.xp,
+        )
+        // Only the most recent completed quests are kept; their XP is already in renownXp.
+        val keep = done.completedQuests.take(Renown.COMPLETED_KEPT).map { it.id }.toSet()
+        return done.copy(quests = done.quests.filter { !it.isCompleted || it.id in keep })
+    }
+
+    fun uncompleteQuest(id: String): AppState {
+        val quest = quest(id) ?: return this
+        if (!quest.isCompleted) return this
+        return copy(
+            quests = quests.map { if (it.id == id) it.copy(completedAt = null) else it },
+            renownXp = (renownXp - quest.xp).coerceAtLeast(0),
+        )
+    }
+
+    private inline fun updateQuest(id: String, transform: (Quest) -> Quest): AppState =
+        copy(quests = quests.map { if (it.id == id) transform(it) else it })
 
     // ---- Steps ----
 

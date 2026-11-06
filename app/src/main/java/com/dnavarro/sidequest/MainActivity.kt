@@ -24,11 +24,15 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.dnavarro.sidequest.model.QuestDraft
 import com.dnavarro.sidequest.model.SkillDraft
 import com.dnavarro.sidequest.steps.StepCounterService
 import com.dnavarro.sidequest.steps.StepPermissions
 import com.dnavarro.sidequest.ui.components.ScrollParchment
 import com.dnavarro.sidequest.ui.home.HomeScreen
+import com.dnavarro.sidequest.ui.home.HomeTab
+import com.dnavarro.sidequest.ui.quest.QuestDetailScreen
+import com.dnavarro.sidequest.ui.quest.QuestEditorScreen
 import com.dnavarro.sidequest.ui.skill.SkillDetailScreen
 import com.dnavarro.sidequest.ui.skill.SkillEditorScreen
 import com.dnavarro.sidequest.ui.skill.StepStatus
@@ -50,6 +54,8 @@ class MainActivity : ComponentActivity() {
 private const val ROUTE_HOME = "home"
 private const val ROUTE_NEW = "new"
 private const val SKILL_PREFIX = "skill/"
+private const val ROUTE_NEW_QUEST = "new-quest"
+private const val QUEST_PREFIX = "quest/"
 
 @Composable
 private fun SideQuestRoot(vm: MainViewModel = viewModel()) {
@@ -94,12 +100,40 @@ private fun SideQuestRoot(vm: MainViewModel = viewModel()) {
     var route by rememberSaveable { mutableStateOf(ROUTE_HOME) }
     BackHandler(enabled = route != ROUTE_HOME) { route = ROUTE_HOME }
     val openSkill = if (route.startsWith(SKILL_PREFIX)) state.skill(route.removePrefix(SKILL_PREFIX)) else null
-    LaunchedEffect(route, openSkill) {
+    val openQuest = if (route.startsWith(QUEST_PREFIX)) state.quest(route.removePrefix(QUEST_PREFIX)) else null
+    LaunchedEffect(route, openSkill, openQuest) {
         if (route.startsWith(SKILL_PREFIX) && openSkill == null) route = ROUTE_HOME
+        if (route.startsWith(QUEST_PREFIX) && openQuest == null) route = ROUTE_HOME
     }
+    var tab by rememberSaveable { mutableStateOf(HomeTab.SKILLS) }
 
     ScrollParchment {
         when {
+            route == ROUTE_NEW_QUEST -> QuestEditorScreen(
+                heading = "New Quest",
+                initial = remember { QuestDraft.newQuest() },
+                xpLocked = false,
+                onSave = {
+                    vm.addQuest(it)
+                    route = ROUTE_HOME
+                },
+                onCancel = { route = ROUTE_HOME },
+            )
+            openQuest != null -> QuestDetailScreen(
+                quest = openQuest,
+                onBack = { route = ROUTE_HOME },
+                onComplete = {
+                    // Back to the list so the quest can be seen sliding into the completed section.
+                    vm.completeQuest(openQuest.id)
+                    route = ROUTE_HOME
+                },
+                onUncomplete = { vm.uncompleteQuest(openQuest.id) },
+                onSaveEdit = { vm.editQuest(openQuest.id, it) },
+                onDelete = {
+                    vm.deleteQuest(openQuest.id)
+                    route = ROUTE_HOME
+                },
+            )
             route == ROUTE_NEW -> SkillEditorScreen(
                 heading = "New Skill",
                 initial = remember { SkillDraft.newSkill() },
@@ -124,12 +158,17 @@ private fun SideQuestRoot(vm: MainViewModel = viewModel()) {
             )
             else -> HomeScreen(
                 state = state,
+                tab = tab,
+                onTab = { tab = it },
                 onName = vm::setName,
                 onTitle = vm::setTitle,
                 onCharacter = vm::setCharacter,
                 onLevelSettings = vm::setLevelSettings,
                 onOpenSkill = { route = SKILL_PREFIX + it },
                 onNewSkill = { route = ROUTE_NEW },
+                onOpenQuest = { route = QUEST_PREFIX + it },
+                onToggleQuest = { if (it.isCompleted) vm.uncompleteQuest(it.id) else vm.completeQuest(it.id) },
+                onNewQuest = { route = ROUTE_NEW_QUEST },
             )
         }
     }

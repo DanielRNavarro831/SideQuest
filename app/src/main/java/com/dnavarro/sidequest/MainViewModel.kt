@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import com.dnavarro.sidequest.model.AppState
 import com.dnavarro.sidequest.model.CharacterClass
 import com.dnavarro.sidequest.model.OverallLevelSettings
+import com.dnavarro.sidequest.model.QuestDraft
 import com.dnavarro.sidequest.model.SkillDraft
 import kotlinx.coroutines.flow.StateFlow
 import java.time.LocalDate
@@ -24,6 +25,12 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun deleteSkill(id: String) = repository.update { it.deleteSkill(id) }
     fun gainXp(id: String) = repository.update { it.gainXp(id) }
     fun loseXp(id: String) = repository.update { it.loseXp(id) }
+
+    fun addQuest(draft: QuestDraft) = repository.update { it.addQuest(UUID.randomUUID().toString(), draft) }
+    fun editQuest(id: String, draft: QuestDraft) = repository.update { it.editQuest(id, draft) }
+    fun deleteQuest(id: String) = repository.update { it.deleteQuest(id) }
+    fun completeQuest(id: String) = repository.update { it.completeQuest(id, System.currentTimeMillis()) }
+    fun uncompleteQuest(id: String) = repository.update { it.uncompleteQuest(id) }
 
     fun onResume() = repository.update { it.rollOverDay(LocalDate.now()) }
     fun markPermissionPrompted() = repository.update { it.markPermissionPrompted() }

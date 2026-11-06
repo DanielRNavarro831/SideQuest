@@ -30,21 +30,28 @@ data class OverallLevel(
 )
 
 object OverallLevelCalculator {
-    fun calculate(skills: List<Skill>, settings: OverallLevelSettings): OverallLevel =
+    /** [renownRanks] each count as one extra skill level-up, whatever the mode. */
+    fun calculate(skills: List<Skill>, settings: OverallLevelSettings, renownRanks: Long = 0): OverallLevel =
         when (settings.mode) {
             LevelMode.AVERAGE -> OverallLevel(
-                if (skills.isEmpty()) 1 else (skills.sumOf { it.level.toLong() } / skills.size).toInt(),
+                if (skills.isEmpty()) {
+                    (1 + renownRanks).toIntLevel()
+                } else {
+                    ((skills.sumOf { it.level.toLong() } + renownRanks) / skills.size).toIntLevel()
+                },
             )
-            LevelMode.SUM -> OverallLevel(skills.sumOf { it.level })
+            LevelMode.SUM -> OverallLevel((skills.sumOf { it.level.toLong() } + renownRanks).toIntLevel())
             LevelMode.EVERY_X -> {
                 val x = settings.x.coerceAtLeast(Limits.X_MIN)
                 // Skills start at level 1, so a skill's level-ups are level - 1.
-                val levelUps = skills.sumOf { (it.level - 1).toLong() }
+                val levelUps = skills.sumOf { (it.level - 1).toLong() } + renownRanks
                 OverallLevel(
-                    level = (1 + levelUps / x).toInt(),
+                    level = (1 + levelUps / x).toIntLevel(),
                     progress = (levelUps % x).toInt(),
                     progressGoal = x,
                 )
             }
         }
 }
+
+private fun Long.toIntLevel(): Int = coerceIn(1, Int.MAX_VALUE.toLong()).toInt()

@@ -102,7 +102,7 @@ fun EditableText(
             placeholder = { Text(placeholder, style = textStyle, color = Parchment.InkFaded) },
             trailingIcon = {
                 IconButton(onClick = save) {
-                    ButtonIcon("button_save", R.drawable.ic_check, "Save", Parchment.Wood, artSize = 28.dp)
+                    ButtonIcon("button_edit", R.drawable.ic_check, "Save", Parchment.Wood, artSize = 28.dp)
                 }
             },
             keyboardOptions = KeyboardOptions(

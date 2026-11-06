@@ -183,7 +183,7 @@ fun SkillEditorScreen(
             onClick = save,
             colors = ButtonDefaults.buttonColors(containerColor = Parchment.Wood, contentColor = Parchment.Paper),
         ) {
-            ButtonIcon("button_save", R.drawable.ic_check, null, Parchment.Paper)
+            ButtonIcon("button_edit", R.drawable.ic_check, null, Parchment.Paper)
             Spacer(Modifier.width(6.dp))
             Text("Save")
         }
@@ -192,7 +192,7 @@ fun SkillEditorScreen(
 }
 
 @Composable
-private fun IconPicker(selected: SkillIcon, onSelect: (SkillIcon) -> Unit) {
+fun IconPicker(selected: SkillIcon, onSelect: (SkillIcon) -> Unit) {
     val perRow = 3
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SkillIcon.entries.chunked(perRow).forEach { row ->
