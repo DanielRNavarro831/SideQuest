@@ -22,6 +22,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.sp
+import com.dnavarro.sidequest.ui.components.FitText
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -81,11 +83,12 @@ fun QuestDetailScreen(
         ScreenTopBar("Quest", onBack)
         val fade = if (quest.isCompleted) 0.5f else 1f
         ArtImage(quest.icon.art, size = 96.dp, modifier = Modifier.alpha(fade))
-        Text(
+        FitText(
             quest.name.withPlainDigits(),
-            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, textAlign = TextAlign.Center),
             color = Parchment.Ink,
-            textAlign = TextAlign.Center,
+            maxLines = 2,
+            minSize = 16.sp,
         )
         Text(
             "Reward: ${quest.xp.withCommas()} XP".withPlainDigits(),

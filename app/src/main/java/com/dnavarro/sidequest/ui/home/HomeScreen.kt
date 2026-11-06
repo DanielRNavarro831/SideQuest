@@ -22,6 +22,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.sp
+import com.dnavarro.sidequest.ui.components.FitText
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.graphicsLayer
@@ -325,14 +327,14 @@ private fun QuestRow(quest: Quest, onClick: () -> Unit, onToggle: () -> Unit, mo
         ArtImage(quest.icon.art, size = 40.dp)
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
-            Text(
+            FitText(
                 quest.name.withPlainDigits(),
                 style = MaterialTheme.typography.titleMedium.copy(
                     textDecoration = if (done) TextDecoration.LineThrough else TextDecoration.None,
                 ),
                 color = Parchment.Ink,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+                maxLines = 2,
+                minSize = 12.sp,
             )
             if (quest.description.isNotEmpty()) {
                 Text(
@@ -384,13 +386,13 @@ private fun SkillRow(skill: Skill, onClick: () -> Unit, modifier: Modifier = Mod
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
+                FitText(
                     skill.name.withPlainDigits(),
                     style = MaterialTheme.typography.titleMedium,
                     color = Parchment.Ink,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f),
+                    minSize = 11.sp,
+                    modifier = Modifier.weight(1f).padding(end = 8.dp),
                 )
                 Text(
                     "Lv ${skill.level}".withPlainDigits(),

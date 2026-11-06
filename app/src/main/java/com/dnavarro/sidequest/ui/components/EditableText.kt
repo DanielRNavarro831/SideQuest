@@ -13,6 +13,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,6 +50,8 @@ fun EditableText(
     placeholder: String,
     textStyle: TextStyle,
     modifier: Modifier = Modifier,
+    maxLines: Int = 1,
+    minSize: TextUnit = 11.sp,
 ) {
     var editing by rememberSaveable { mutableStateOf(false) }
     var draft by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue()) }
@@ -55,11 +59,11 @@ fun EditableText(
 
     if (!editing) {
         val empty = value.isEmpty()
-        Text(
+        FitText(
             text = (if (empty) placeholder else value).withPlainDigits(),
             style = if (empty) textStyle.copy(color = Parchment.InkFaded, fontStyle = FontStyle.Italic) else textStyle,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
+            maxLines = maxLines,
+            minSize = minSize,
             modifier = modifier
                 .clickable {
                     draft = TextFieldValue(value, TextRange(value.length))

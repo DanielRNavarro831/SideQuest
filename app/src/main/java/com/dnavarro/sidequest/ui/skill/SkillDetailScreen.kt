@@ -28,6 +28,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.sp
+import com.dnavarro.sidequest.ui.components.FitText
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -102,11 +104,12 @@ fun SkillDetailScreen(
     ) {
         ScreenTopBar("Skill", onBack)
         ArtImage(skill.icon.art, size = 96.dp)
-        Text(
+        FitText(
             skill.name.withPlainDigits(),
-            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, textAlign = TextAlign.Center),
             color = Parchment.Ink,
-            textAlign = TextAlign.Center,
+            maxLines = 2,
+            minSize = 16.sp,
         )
         Text("Level ${skill.level}".withPlainDigits(), style = MaterialTheme.typography.titleLarge, color = Parchment.Wood)
         Spacer(Modifier.height(12.dp))

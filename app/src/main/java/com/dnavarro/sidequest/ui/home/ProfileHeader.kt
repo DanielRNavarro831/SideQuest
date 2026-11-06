@@ -109,6 +109,8 @@ fun ProfileHeader(
                     maxLength = Limits.NAME_MAX,
                     required = true,
                     placeholder = "Your name",
+                    maxLines = 3,
+                    minSize = 10.sp,
                     textStyle = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Bold,
                         color = Parchment.Ink,
@@ -120,6 +122,8 @@ fun ProfileHeader(
                     maxLength = Limits.TITLE_MAX,
                     required = false,
                     placeholder = "Add a title…",
+                    maxLines = 3,
+                    minSize = 10.sp,
                     textStyle = MaterialTheme.typography.bodyLarge.copy(
                         fontStyle = FontStyle.Italic,
                         color = Parchment.InkFaded,

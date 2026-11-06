@@ -306,11 +306,12 @@ private fun LevelUpBanner(
                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                 color = Parchment.Wood,
             )
-            Text(
+            FitText(
                 name.withPlainDigits(),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleMedium.copy(textAlign = TextAlign.Center),
                 color = Parchment.Ink,
-                textAlign = TextAlign.Center,
+                maxLines = 2,
+                minSize = 12.sp,
                 modifier = Modifier.padding(top = 2.dp),
             )
             Text(

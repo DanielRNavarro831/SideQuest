@@ -17,6 +17,14 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.isSpecified
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.graphics.isSpecified
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -125,3 +133,29 @@ fun String.withPlainDigits(): AnnotatedString = buildAnnotatedString {
 /** For text fields that only ever hold numbers. */
 val NumberFieldStyle: TextStyle
     @Composable get() = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Serif)
+
+/**
+ * Text that shrinks (down to [minSize]) instead of trailing off with "…", so long names always
+ * show in full. It uses up to [maxLines] lines at the largest size that fits; only if even
+ * [minSize] can't fit does it fall back to an ellipsis.
+ */
+@Composable
+fun FitText(
+    text: AnnotatedString,
+    style: TextStyle,
+    modifier: Modifier = Modifier,
+    color: Color = Color.Unspecified,
+    maxLines: Int = 1,
+    minSize: TextUnit = 11.sp,
+) {
+    val max = if (style.fontSize.isSpecified) style.fontSize else 16.sp
+    BasicText(
+        text = text,
+        modifier = modifier,
+        // Line height follows the shrunken font so wrapped lines don't keep big gaps.
+        style = style.copy(color = if (color.isSpecified) color else style.color, lineHeight = 1.15.em),
+        maxLines = maxLines,
+        overflow = TextOverflow.Ellipsis,
+        autoSize = TextAutoSize.StepBased(minFontSize = minSize, maxFontSize = max, stepSize = 0.5.sp),
+    )
+}
