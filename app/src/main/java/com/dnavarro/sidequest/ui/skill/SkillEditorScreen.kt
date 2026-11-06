@@ -177,7 +177,7 @@ fun SkillEditorScreen(
 
 @Composable
 private fun IconPicker(selected: SkillIcon, onSelect: (SkillIcon) -> Unit) {
-    val perRow = 4
+    val perRow = 3
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SkillIcon.entries.chunked(perRow).forEach { row ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -194,7 +194,7 @@ private fun IconPicker(selected: SkillIcon, onSelect: (SkillIcon) -> Unit) {
                             .padding(6.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        ArtImage(option.art, size = 36.dp)
+                        ArtImage(option.art, size = 48.dp)
                         Text(
                             option.art.label,
                             style = MaterialTheme.typography.labelSmall,

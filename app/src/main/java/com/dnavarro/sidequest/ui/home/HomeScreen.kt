@@ -64,7 +64,7 @@ fun HomeScreen(
             Ornament()
             LazyColumn(
                 Modifier.weight(1f).fillMaxWidth(),
-                contentPadding = PaddingValues(start = 14.dp, end = 14.dp, top = 4.dp, bottom = 88.dp),
+                contentPadding = PaddingValues(start = 4.dp, end = 4.dp, top = 4.dp, bottom = 88.dp),
             ) {
                 items(state.skills, key = { it.id }) { skill ->
                     SkillRow(skill, onClick = { onOpenSkill(skill.id) })

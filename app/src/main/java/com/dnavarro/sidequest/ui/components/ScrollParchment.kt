@@ -3,43 +3,49 @@ package com.dnavarro.sidequest.ui.components
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import com.dnavarro.sidequest.R
 import com.dnavarro.sidequest.ui.theme.Parchment
-import kotlin.random.Random
+import kotlin.math.roundToInt
 
-private val RodHeight = 30.dp
-private val KnobWidth = 14.dp
-private val SheetInset = 16.dp
+// Geometry of the art in res/drawable-nodpi (source pixels), cut from art-source/scroll/scroll_full.jpg.
+private const val TOP_W = 830f
+private const val TOP_H = 146f
+private const val BOTTOM_W = 810f
+private const val BOTTOM_H = 150f
+private const val PAPER_LEFT = 52f // where the paper starts under the top roll
+private const val PAPER_W = 730f
+private const val TUCK = 0.12f // fraction of each roll's height the paper slides underneath
+private const val TEXT_MARGIN = 0.05f // keeps content clear of the torn paper edges
 
 /**
- * The app background: a scroll whose rolled ends stay pinned to the top and bottom of the
- * screen. On launch the bottom rod unrolls downward to reveal the parchment.
+ * The app background: a scroll whose rolls stay pinned to the top and bottom of the screen,
+ * with the parchment repeating between them. On launch the bottom roll unrolls downward.
  */
 @Composable
 fun ScrollParchment(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
@@ -47,111 +53,86 @@ fun ScrollParchment(modifier: Modifier = Modifier, content: @Composable () -> Un
     LaunchedEffect(Unit) {
         unroll.animateTo(1f, tween(durationMillis = 900, easing = FastOutSlowInEasing))
     }
-    Column(
+    val topRoll = ImageBitmap.imageResource(R.drawable.scroll_top)
+    val bottomRoll = ImageBitmap.imageResource(R.drawable.scroll_bottom)
+    val paper = ImageBitmap.imageResource(R.drawable.scroll_paper)
+
+    BoxWithConstraints(
         modifier
             .fillMaxSize()
             .background(Parchment.Backdrop)
             .windowInsetsPadding(WindowInsets.safeDrawing)
             .padding(horizontal = 6.dp, vertical = 4.dp),
     ) {
-        ScrollRod()
-        BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
-            val sheetMax = maxHeight - RodHeight
-            Column(Modifier.fillMaxSize()) {
-                Box(
-                    Modifier
-                        .padding(horizontal = SheetInset)
-                        .fillMaxWidth()
-                        .height(sheetMax * unroll.value)
-                        .clipToBounds()
-                        .drawBehind { drawParchment() },
-                ) {
-                    // Laid out at full height from the start so content doesn't reflow while unrolling.
-                    Box(
-                        Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight(Alignment.Top, unbounded = true)
-                            .height(sheetMax),
-                    ) { content() }
+        val rollW = maxWidth
+        val topH = rollW * (TOP_H / TOP_W)
+        val bottomW = rollW * (BOTTOM_W / TOP_W)
+        val bottomH = bottomW * (BOTTOM_H / BOTTOM_W)
+        val paperX = rollW * (PAPER_LEFT / TOP_W)
+        val paperW = rollW * (PAPER_W / TOP_W)
+        val tuckTop = topH * TUCK
+        val tuckBottom = bottomH * TUCK
+        val sheetMax = maxHeight - topH - bottomH
+
+        // The unroll only changes what's drawn and where the bottom roll sits, so animation
+        // frames skip recomposition and layout (unroll.value is read in draw/placement lambdas).
+
+        // Paper, tiled downward and tucked under both rolls.
+        Box(
+            Modifier
+                .offset(x = paperX, y = topH - tuckTop)
+                .width(paperW)
+                .height(sheetMax + tuckTop + tuckBottom)
+                .drawBehind {
+                    val revealed = tuckTop.toPx() + sheetMax.toPx() * unroll.value + tuckBottom.toPx()
+                    val step = (size.width * paper.height / paper.width).roundToInt().coerceAtLeast(1)
+                    val dstSize = IntSize(size.width.roundToInt(), step)
+                    clipRect(bottom = revealed) {
+                        var y = 0
+                        while (y < revealed) {
+                            drawImage(
+                                image = paper,
+                                srcOffset = IntOffset.Zero,
+                                srcSize = IntSize(paper.width, paper.height),
+                                dstOffset = IntOffset(0, y),
+                                dstSize = dstSize,
+                                filterQuality = FilterQuality.None,
+                            )
+                            y += step
+                        }
+                    }
+                },
+        )
+
+        // Content, laid out at full size and revealed as the scroll unrolls.
+        Box(
+            Modifier
+                .offset(x = paperX, y = topH)
+                .width(paperW)
+                .height(sheetMax)
+                .drawWithContent {
+                    clipRect(bottom = size.height * unroll.value) { this@drawWithContent.drawContent() }
                 }
-                ScrollRod()
-            }
-        }
-    }
-}
+                .padding(horizontal = paperW * TEXT_MARGIN),
+        ) { content() }
 
-private fun DrawScope.drawParchment() {
-    drawRect(
-        Brush.horizontalGradient(
-            0f to Parchment.PaperEdge,
-            0.05f to Parchment.PaperShade,
-            0.18f to Parchment.Paper,
-            0.82f to Parchment.Paper,
-            0.95f to Parchment.PaperShade,
-            1f to Parchment.PaperEdge,
-        ),
-    )
-    // A few faint stains, fixed in place so they're revealed as the scroll unrolls.
-    val random = Random(42)
-    val stainArea = 1600.dp.toPx()
-    repeat(16) {
-        val center = Offset(random.nextFloat() * size.width, random.nextFloat() * stainArea)
-        val radius = (40 + random.nextFloat() * 90).dp.toPx()
-        drawCircle(
-            Brush.radialGradient(
-                listOf(Parchment.PaperEdge.copy(alpha = 0.16f), Color.Transparent),
-                center = center,
-                radius = radius,
-            ),
-            radius = radius,
-            center = center,
+        // Rolls on top.
+        Image(
+            bitmap = topRoll,
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds,
+            filterQuality = FilterQuality.None,
+            modifier = Modifier.width(rollW).height(topH),
         )
-    }
-    val shadow = 18.dp.toPx()
-    drawRect(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.18f), Color.Transparent), endY = shadow))
-    drawRect(
-        Brush.verticalGradient(
-            listOf(Color.Transparent, Color.Black.copy(alpha = 0.18f)),
-            startY = size.height - shadow,
-            endY = size.height,
-        ),
-    )
-}
-
-@Composable
-private fun ScrollRod() {
-    Canvas(Modifier.fillMaxWidth().height(RodHeight)) {
-        val knob = KnobWidth.toPx()
-        val h = size.height
-        // The rolled-up paper.
-        drawRoundRect(
-            brush = Brush.verticalGradient(
-                listOf(Parchment.PaperEdge, Parchment.Paper, Parchment.PaperShade, Parchment.PaperEdge),
-            ),
-            topLeft = Offset(knob, 0f),
-            size = Size(size.width - 2 * knob, h),
-            cornerRadius = CornerRadius(4.dp.toPx()),
+        Image(
+            bitmap = bottomRoll,
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds,
+            filterQuality = FilterQuality.None,
+            modifier = Modifier
+                .offset { IntOffset(((rollW - bottomW) / 2).roundToPx(), (topH + sheetMax * unroll.value).roundToPx()) }
+                .width(bottomW)
+                .height(bottomH),
         )
-        drawLine(
-            Parchment.PaperEdge,
-            Offset(knob, h * 0.32f),
-            Offset(size.width - knob, h * 0.32f),
-            strokeWidth = 1.dp.toPx(),
-        )
-        // Wooden handles at each end.
-        val handleTop = h * 0.14f
-        val handleHeight = h * 0.72f
-        listOf(0f, size.width - knob).forEach { x ->
-            drawRoundRect(
-                brush = Brush.verticalGradient(
-                    listOf(Parchment.WoodDark, Parchment.WoodLight, Parchment.Wood, Parchment.WoodDark),
-                    startY = handleTop,
-                    endY = handleTop + handleHeight,
-                ),
-                topLeft = Offset(x, handleTop),
-                size = Size(knob, handleHeight),
-                cornerRadius = CornerRadius(knob / 2),
-            )
-        }
     }
 }

@@ -42,6 +42,13 @@ val SkillIcon.art: ArtSpec
         SkillIcon.BOW_AND_ARROW -> ArtSpec("Bow and Arrow", "🏹", "skill_bow_and_arrow")
         SkillIcon.QUILL_AND_PARCHMENT -> ArtSpec("Quill and Parchment", "🪶", "skill_quill_and_parchment")
         SkillIcon.POTION -> ArtSpec("Potion", "🧪", "skill_potion")
+        SkillIcon.ARMOR -> ArtSpec("Armor", "🥋", "skill_armor")
+        SkillIcon.HEART -> ArtSpec("Heart", "❤️", "skill_heart")
+        SkillIcon.LUTE -> ArtSpec("Lute", "🪕", "skill_lute")
+        SkillIcon.SKULL -> ArtSpec("Skull", "💀", "skill_skull")
+        SkillIcon.TREASURE_CHEST -> ArtSpec("Treasure Chest", "🧰", "skill_treasure_chest")
+        SkillIcon.TREE -> ArtSpec("Tree", "🌳", "skill_tree")
+        SkillIcon.TURKEY_LEG -> ArtSpec("Turkey Leg", "🍗", "skill_turkey_leg")
     }
 
 val CharacterClass.art: ArtSpec

@@ -69,11 +69,12 @@ fun ProfileHeader(
     var pickingCharacter by rememberSaveable { mutableStateOf(false) }
     var editingLevel by rememberSaveable { mutableStateOf(false) }
 
-    Column(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 4.dp)) {
+    // Light side padding: the scroll already keeps content clear of the torn paper edges.
+    Column(Modifier.fillMaxWidth().padding(start = 6.dp, end = 6.dp, top = 14.dp, bottom = 4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Portrait(
                 profile.character,
-                size = 80.dp,
+                size = 72.dp,
                 modifier = Modifier.clickable { pickingCharacter = true },
             )
             Spacer(Modifier.width(12.dp))
