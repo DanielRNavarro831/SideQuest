@@ -165,13 +165,24 @@ private fun HomeTabs(selected: HomeTab, onSelect: (HomeTab) -> Unit) {
                     .selectable(selected = isSelected, onClick = { onSelect(tab) }, role = Role.Tab),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(
-                    if (tab == HomeTab.SKILLS) "Skills" else "Quests",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                    ),
-                    color = if (isSelected) Parchment.Paper else Parchment.Wood,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    val tint = if (isSelected) Parchment.Paper else Parchment.Wood
+                    ButtonIcon(
+                        if (tab == HomeTab.SKILLS) "button_skills" else "button_quests",
+                        R.drawable.ic_check,
+                        null,
+                        tint,
+                        artSize = 30.dp,
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        if (tab == HomeTab.SKILLS) "Skills" else "Quests",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                        ),
+                        color = tint,
+                    )
+                }
             }
         }
     }
