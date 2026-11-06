@@ -77,7 +77,7 @@ fun SettingsScreen(
         Section("Sound") {
             SwitchRow(
                 title = "Sound effects",
-                subtitle = "Plays on level-ups, finished quests and tab switches. Always quiet when your phone is on silent.",
+                subtitle = "Plays on level-ups, finished quests, new skills and quests, and tab switches. Always quiet when your phone is on silent.",
                 checked = profile.soundOn,
                 onChange = onSound,
             )

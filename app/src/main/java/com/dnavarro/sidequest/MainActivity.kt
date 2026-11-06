@@ -140,6 +140,7 @@ private fun SideQuestRoot(vm: MainViewModel = viewModel()) {
                 xpLocked = false,
                 onSave = {
                     vm.addQuest(it)
+                    if (state.profile.soundOn) sounds.playNewEntry()
                     route = ROUTE_HOME
                 },
                 onCancel = { route = ROUTE_HOME },
@@ -165,6 +166,7 @@ private fun SideQuestRoot(vm: MainViewModel = viewModel()) {
                 showThresholdHint = false,
                 onSave = {
                     vm.addSkill(it)
+                    if (state.profile.soundOn) sounds.playNewEntry()
                     route = ROUTE_HOME
                 },
                 onCancel = { route = ROUTE_HOME },
