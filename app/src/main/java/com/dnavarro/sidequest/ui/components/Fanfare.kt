@@ -330,16 +330,16 @@ private fun HeroPortrait(c: Celebration.HeroLevelUp) {
         animationSpec = infiniteRepeatable(tween(700), RepeatMode.Reverse),
         label = "glow",
     )
-    val shape = RoundedCornerShape(16.dp)
-    Box(
-        Modifier
-            .shadow((6 + 10 * glow).dp, shape, ambientColor = CoinGold, spotColor = CoinGold)
-            .clip(shape)
-            .background(Parchment.PaperShade)
-            .border(3.dp, CoinGold.copy(alpha = 0.6f + 0.4f * glow), shape)
-            .padding(6.dp),
-    ) {
-        ArtImage(c.character.art, size = 104.dp)
+    // A pulsing golden glow behind the framed portrait.
+    Box(contentAlignment = Alignment.Center) {
+        Box(
+            Modifier
+                .size(118.dp)
+                .shadow((8 + 14 * glow).dp, RoundedCornerShape(10.dp), ambientColor = CoinGold, spotColor = CoinGold),
+        )
+        FramedBox("frame_portrait", size = 132.dp, inset = FrameInsets.PORTRAIT) {
+            ArtImage(c.character.art, size = 90.dp)
+        }
     }
 }
 

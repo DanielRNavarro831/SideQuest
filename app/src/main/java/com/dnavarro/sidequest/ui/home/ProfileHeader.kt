@@ -25,6 +25,10 @@ import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import com.dnavarro.sidequest.ui.components.FrameInsets
+import com.dnavarro.sidequest.ui.components.FramedBox
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.draw.shadow
 import androidx.compose.runtime.remember
@@ -84,12 +88,16 @@ fun ProfileHeader(
     // Light side padding: the scroll already keeps content clear of the torn paper edges.
     Column(Modifier.fillMaxWidth().padding(start = 6.dp, end = 6.dp, top = 14.dp, bottom = 4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Portrait(
-                profile.character,
-                size = 72.dp,
-                modifier = Modifier.clickable { pickingCharacter = true },
-            )
-            Spacer(Modifier.width(12.dp))
+            FramedBox(
+                "frame_portrait",
+                size = 88.dp,
+                inset = FrameInsets.PORTRAIT,
+                modifier = Modifier.clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                ) { pickingCharacter = true },
+            ) { ArtImage(profile.character.art, size = 60.dp) }
+            Spacer(Modifier.width(8.dp))
             Column(Modifier.weight(1f)) {
                 EditableText(
                     value = profile.name,
@@ -182,7 +190,6 @@ private fun Portrait(character: CharacterClass, size: Dp, modifier: Modifier = M
 
 @Composable
 private fun LevelBadge(level: Int, pulses: Int, played: Int, onPulsed: (Int) -> Unit, onClick: () -> Unit) {
-    val shape = RoundedCornerShape(12.dp)
     // After a hero level-up banner, throb a few times the next time the badge is on screen.
     val pulse = remember { Animatable(0f) }
     LaunchedEffect(pulses) {
@@ -194,27 +201,39 @@ private fun LevelBadge(level: Int, pulses: Int, played: Int, onPulsed: (Int) -> 
             }
         }
     }
-    Column(
-        Modifier
+    FramedBox(
+        "frame_level",
+        size = 80.dp,
+        inset = FrameInsets.LEVEL,
+        // A warm glow fills the opening while it pulses.
+        fill = lerp(Parchment.PaperShade, Parchment.Paper, pulse.value),
+        modifier = Modifier
             .graphicsLayer {
                 val s = 1f + 0.18f * pulse.value
                 scaleX = s
                 scaleY = s
             }
-            .shadow((10 * pulse.value).dp, shape, ambientColor = Parchment.Gold, spotColor = Parchment.Gold)
-            .clip(shape)
-            .background(Parchment.PaperShade)
-            .border((2 + 2 * pulse.value).dp, Parchment.Gold, shape)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            ),
     ) {
-        Text("LEVEL", style = MaterialTheme.typography.labelSmall, color = Parchment.InkFaded, letterSpacing = 1.5.sp)
-        Text(
-            "$level".withPlainDigits(),
-            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-            color = Parchment.Wood,
-        )
+        // Tight line heights so the label and number fit the frame's opening together.
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                "LEVEL",
+                style = MaterialTheme.typography.labelSmall.copy(lineHeight = 12.sp),
+                color = Parchment.InkFaded,
+                letterSpacing = 1.sp,
+            )
+            Text(
+                "$level".withPlainDigits(),
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, lineHeight = 30.sp),
+                color = lerp(Parchment.Wood, Parchment.Gold, pulse.value),
+                maxLines = 1,
+            )
+        }
     }
 }
 
